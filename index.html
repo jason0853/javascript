@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>Document</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div id="app">
+        <div class="form">
+            <input type="text" >
+            <button type="button" id="addBtn">Add</button>
+        </div>
+        <ul></ul>
+        <button type="button" id="saveBtn">Save</button>
+    </div>
+
+    <script type="text/javascript">
+        
+        var app = document.getElementById('app');
+        var input = qs('input', app);
+        var addBtn = qs('#addBtn', app);
+        var saveBtn = qs('#saveBtn', app);
+        var list = qs('ul');
+        var removeBtn = qs('.removeBtn', list);
+        var data = [];
+
+        // event listener
+        input.addEventListener('keypress', add);
+        addBtn.addEventListener('click', add);
+        app.addEventListener('click', remove);
+        saveBtn.addEventListener('click', save);
+
+        // Add a item
+        function add(e) {
+            var key = e.which || e.keyCode;
+            if (!input.value) return;
+            if (key === 1 || key === 13) {
+                list.innerHTML += '<li>' + input.value + ' <a href="#" class="removeBtn">X</a></li>';
+                data.push(input.value);
+                input.value = '';
+            }
+        };
+        
+        /*
+         * Remove a item
+         *
+         * @param { object } e
+         */
+        function remove(e) {
+            e.preventDefault();
+            if (e.target.tagName.toLowerCase() === 'a') {
+                e = e;
+                var target = e.target.parentNode;
+                list.removeChild(target);
+            }
+        }
+
+        function save() {
+            localStorage.setItem('data', JSON.stringify(data));
+        }
+        
+        /*
+         * Select a element
+         * 
+         * @param { string } selector
+         * @param { object } scope
+         */
+        function qs(selector, scope) {
+            return (scope || document).querySelector(selector);
+        }
+    </script>
+</body>
+</html>
