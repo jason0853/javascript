@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta http-equiv="X-UA-Compatible" content="ie=edge">
-    <title>Document</title>
+    <title>Test</title>
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
@@ -14,35 +14,62 @@
             <button type="button" id="addBtn">Add</button>
         </div>
         <ul></ul>
-        <button type="button" id="saveBtn">Save</button>
+        <div class="btn-group">
+            <button type="button" id="saveBtn">Save</button>
+            <button type="button" id="removeAllBtn">Delete</button>
+        </div>
     </div>
 
     <script type="text/javascript">
-        
         var app = document.getElementById('app');
         var input = qs('input', app);
         var addBtn = qs('#addBtn', app);
         var saveBtn = qs('#saveBtn', app);
+        var removeAllBtn = qs('#removeAllBtn', app);
         var list = qs('ul');
         var removeBtn = qs('.removeBtn', list);
         var data = [];
+
+        initialLoad();
 
         // event listener
         input.addEventListener('keypress', add);
         addBtn.addEventListener('click', add);
         app.addEventListener('click', remove);
         saveBtn.addEventListener('click', save);
+        removeAllBtn.addEventListener('click', removeAll);
 
         // Add a item
         function add(e) {
             var key = e.which || e.keyCode;
             if (!input.value) return;
             if (key === 1 || key === 13) {
-                list.innerHTML += '<li>' + input.value + ' <a href="#" class="removeBtn">X</a></li>';
-                data.push(input.value);
-                input.value = '';
+                inspectSameData(input.value)
+                .then(function() {
+                    data.push(input.value);
+                    list.innerHTML += '<li>' + input.value + '<a href="#" class="removeBtn">X</a></li>';
+                    input.value = '';
+                })
+                .catch(function(err) {
+                    alert('It already exist!');
+                    input.value = '';
+                });
             }
-        };
+        }
+
+        // Inspect duplicate data
+        function inspectSameData(text) {
+            return new Promise(function(resolve, reject) {
+                if (data) {
+                    for (var i = 0; i < data.length; i++) {
+                        if (text == data[i]) {
+                            reject('It already exist!');
+                        }
+                    }
+                }
+                resolve();
+            });
+        }
         
         /*
          * Remove a item
@@ -54,12 +81,36 @@
             if (e.target.tagName.toLowerCase() === 'a') {
                 e = e;
                 var target = e.target.parentNode;
+                var pattern = /<a href="#" class="removeBtn">(.*?)<\/a>/g;
+
+                var newStr = target.innerHTML.replace(pattern, '');
+                var idx = data.indexOf(newStr);
+                data.splice(idx, 1);
                 list.removeChild(target);
             }
+
+            
         }
 
         function save() {
             localStorage.setItem('data', JSON.stringify(data));
+        }
+
+        function removeAll() {
+            while (list.firstChild) {
+                list.removeChild(list.firstChild);
+            }
+            localStorage.removeItem('data');
+        }
+        
+        function initialLoad() {
+            var totalData = JSON.parse(localStorage.getItem('data'));
+            
+            if (!totalData) return;
+            for (var i = 0; i < totalData.length; i++) {
+                data.push(totalData[i]);
+                list.innerHTML += '<li>' + totalData[i] + '<a href="#" class="removeBtn">X</a></li>';
+            }
         }
         
         /*
